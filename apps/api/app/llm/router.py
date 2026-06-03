@@ -16,14 +16,17 @@ class LLMRouter:
         self.provider = self._build_provider(self.settings.llm_provider)
 
     def complete(self, prompt: str, system_prompt: str | None = None) -> LLMResponse:
-        if self.calls_used >= self.settings.llm_max_calls_per_batch:
-            raise ValueError("LLM call limit exceeded for this batch")
         request = LLMRequest(
             prompt=prompt,
             system_prompt=system_prompt,
             require_json=self.settings.llm_require_json,
             max_input_chars=self.settings.llm_max_input_chars,
         )
+        return self.complete_request(request)
+
+    def complete_request(self, request: LLMRequest) -> LLMResponse:
+        if self.calls_used >= self.settings.llm_max_calls_per_batch:
+            raise ValueError("LLM call limit exceeded for this batch")
         response = self.provider.complete(request)
         self.calls_used += 1
         return response

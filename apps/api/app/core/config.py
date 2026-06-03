@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     scraper_delay_ms: int = Field(default=1500, alias="SCRAPER_DELAY_MS", ge=0)
     scraper_timeout_ms: int = Field(default=30000, alias="SCRAPER_TIMEOUT_MS", gt=0)
     scraper_screenshots_enabled: bool = Field(default=True, alias="SCRAPER_SCREENSHOTS_ENABLED")
+    scraper_save_html_enabled: bool = Field(default=True, alias="SCRAPER_SAVE_HTML_ENABLED")
+    scraper_user_agent: str = Field(
+        default="DeedScout Sarasota research-triage bot; public-record snapshot preservation",
+        alias="SCRAPER_USER_AGENT",
+        min_length=1,
+    )
     local_storage_root: Path = Field(
         default=Path("./.storage"),
         validation_alias=AliasChoices("LOCAL_STORAGE_ROOT", "LOCAL_ARTIFACT_ROOT"),

@@ -48,6 +48,16 @@ npm run dev
 
 Open `http://localhost:3000` to view the minimal dashboard shell.
 
+## Optional: Firecrawl source validation
+
+For live Sarasota page structure checks without committing raw evidence, install the [Firecrawl CLI](https://firecrawl.dev) and set `FIRECRAWL_API_KEY` in `.env`, then run:
+
+```bash
+./scripts/validate_sarasota_sources_firecrawl.sh
+```
+
+Outputs land in `.firecrawl/` (gitignored). See `fixtures/sarasota/SOURCE_VALIDATION.md` for field decisions and MCP/CLI status.
+
 ## Docker Compose
 
 ```bash

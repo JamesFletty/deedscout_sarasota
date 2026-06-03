@@ -30,6 +30,37 @@ All requests used user-agent `DeedScout research prototype`, single attempt, no 
 
 **Action for developers:** Re-run validation on a residential or office network with `python -m app.cli scrape-sarasota --url https://www.sarasota.realtaxdeed.com/ --headful --max-pages 3` and replace fixtures with redacted live HTML when access succeeds. If the platform returns CAPTCHA or login, **stop** and record a `scraper_failures` row; do not evade controls.
 
+### Firecrawl MCP and CLI (2026-06-03 retry)
+
+| Channel | Status | Notes |
+|---------|--------|--------|
+| **Firecrawl MCP** | **Not available** in Cursor cloud agent | MCP catalog lists Azure and Firebase only; no Firecrawl server is registered |
+| **Firecrawl CLI** | Installed (`firecrawl` v1.19.0) | `authenticated: false`; no `FIRECRAWL_API_KEY` in environment |
+| **CLI scrape attempt** | **Blocked at login** | Interactive prompt; cannot complete browser login in unattended cloud |
+
+**Recommended path (local or Cursor with API key):**
+
+1. Enable Firecrawl in Cursor: Settings → MCP → add Firecrawl server, or set `FIRECRAWL_API_KEY` from [firecrawl.dev](https://firecrawl.dev).
+2. Authenticate CLI: `firecrawl login --browser` or `firecrawl login --api-key "$FIRECRAWL_API_KEY"`.
+3. Run repo script (writes to `.firecrawl/`, gitignored):
+
+```bash
+export FIRECRAWL_API_KEY=fc-...
+./scripts/validate_sarasota_sources_firecrawl.sh
+```
+
+4. Redact any PII, then copy `rawHtml` from JSON output into `fixtures/sarasota/html/` only if safe to commit.
+
+**Firecrawl CLI equivalents (manual):**
+
+```bash
+firecrawl scrape "https://www.sarasota.realtaxdeed.com/" --wait-for 5000 --format markdown,html --json -o .firecrawl/realtaxdeed-home.json
+firecrawl scrape "https://www.sarasotaclerk.com/Home-and-Property/Tax-Deeds/Tax-Deed-Auctions" --wait-for 5000 --format markdown,html --json -o .firecrawl/clerk-tax-deed-auctions.json
+```
+
+Do not use Firecrawl browser mode on sites with heavy bot detection unless scrape succeeds; prefer `--wait-for` on the RealTaxDeed calendar page first.
+
+
 ---
 
 ## 2. Clerk marketing page vs auction platform
@@ -121,4 +152,4 @@ Fixtures are **synthetic** and labeled as non-live content. They mirror public f
 - [x] Primary scrape target identified (RealTaxDeed, not clerk landing)
 - [x] Assessment strategy documented (C + B fallback)
 - [x] Fixture HTML available for parser work without live network
-- [ ] Live HTML capture on developer network (pending — blocked in cloud agent)
+- [ ] Live HTML capture via Firecrawl or Playwright (pending — cloud agent 403 + Firecrawl unauthenticated)

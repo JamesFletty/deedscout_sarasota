@@ -39,7 +39,7 @@ _BLOCK_TAGS = {
 }
 
 _FIELD_ALIASES: dict[str, tuple[str, ...]] = {
-    "case_number": ("case number", "case no", "case #", "tax deed case"),
+    "case_number": ("case number", "case no", "case #", "tax deed case", "tax deed file", "tax deed file #"),
     "parcel_id": ("parcel id", "parcel number", "parcel", "property id", "alternate key"),
     "auction_date": ("auction date", "sale date", "auction starts"),
     "auction_status": ("auction status", "status"),

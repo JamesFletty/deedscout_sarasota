@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.parsing.auction_parser import parse_auction_html
+from app.parsing.auction_parser import parse_auction_documents
 from app.schemas.auction import FixtureReplayResult, NormalizedAuctionRecord, QuarantinedAuctionRecord
 
 LOW_CONFIDENCE_THRESHOLD = 0.70
@@ -11,11 +11,16 @@ LOW_CONFIDENCE_THRESHOLD = 0.70
 
 def replay_fixture(path: str | Path) -> FixtureReplayResult:
     fixture_path = Path(path)
-    record = parse_auction_html(fixture_path.read_text(encoding="utf-8"), fixture_path=fixture_path)
-    quarantine = _quarantine_if_needed(record)
-    if quarantine is not None:
-        return FixtureReplayResult(records=(), quarantined_records=(quarantine,))
-    return FixtureReplayResult(records=(record,), quarantined_records=())
+    html = fixture_path.read_text(encoding="utf-8")
+    records: list[NormalizedAuctionRecord] = []
+    quarantined: list[QuarantinedAuctionRecord] = []
+    for record in parse_auction_documents(html, fixture_path=fixture_path):
+        quarantine = _quarantine_if_needed(record)
+        if quarantine is not None:
+            quarantined.append(quarantine)
+        else:
+            records.append(record)
+    return FixtureReplayResult(records=tuple(records), quarantined_records=tuple(quarantined))
 
 
 def replay_fixtures(path: str | Path) -> FixtureReplayResult:

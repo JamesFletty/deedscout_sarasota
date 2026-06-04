@@ -1,0 +1,22 @@
+{
+  "quarantined_records": [],
+  "records": [
+    {
+      "appraiser_assessment_cents": 12500000,
+      "auction_date": "2026-07-10",
+      "auction_status": "scheduled",
+      "case_number": "2026-TD-000123",
+      "county": "Sarasota",
+      "detail_url": "https://example.test/sarasota/tax-deed/2026-TD-000123",
+      "missing_fields": [],
+      "notice_url": "https://example.test/sarasota/tax-deed/2026-TD-000123/notice",
+      "opening_bid_cents": 842000,
+      "parcel_id_normalized": "0123456789",
+      "parcel_id_raw": "0123-45-6789",
+      "parse_confidence": 1.0,
+      "parse_warnings": [],
+      "source_fixture_path": "/workspace/fixtures/sarasota/html/sample_auction_detail.html",
+      "tax_deed_record_url": null
+    }
+  ]
+}

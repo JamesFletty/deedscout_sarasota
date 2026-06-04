@@ -108,7 +108,7 @@ class SarasotaAuctionScraper:
                     self.session.flush()
                     created_record_ids.append(auction_record.id)
                     records_created += 1
-                if snapshot is not None and len(created_record_ids) == 1:
+                if snapshot is not None and created_record_ids:
                     snapshot.snapshot.auction_record_id = created_record_ids[0]
                 records_quarantined = len(replay.quarantined_records)
             batch.status = "completed"

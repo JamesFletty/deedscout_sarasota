@@ -152,4 +152,5 @@ Fixtures are **synthetic** and labeled as non-live content. They mirror public f
 - [x] Primary scrape target identified (RealTaxDeed, not clerk landing)
 - [x] Assessment strategy documented (C + B fallback)
 - [x] Fixture HTML available for parser work without live network
+- [x] Parser fixtures for RealTaxDeed list + detail (`auction_list_parser`, golden `expected/*.json`)
 - [ ] Live HTML capture via Firecrawl or Playwright (pending — cloud agent 403 + Firecrawl unauthenticated)

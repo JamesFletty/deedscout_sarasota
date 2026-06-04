@@ -1,0 +1,39 @@
+{
+  "quarantined_records": [],
+  "records": [
+    {
+      "appraiser_assessment_cents": 19850000,
+      "auction_date": "2026-05-15",
+      "auction_status": "scheduled",
+      "case_number": "2026-TD-000456",
+      "county": "Sarasota",
+      "detail_url": "https://www.sarasota.realtaxdeed.com/index.cfm?zaction=AUCTION&zmethod=PREVIEW&AID=1001",
+      "missing_fields": [],
+      "notice_url": null,
+      "opening_bid_cents": 1284733,
+      "parcel_id_normalized": "0145678901",
+      "parcel_id_raw": "0145-67-8901",
+      "parse_confidence": 1.0,
+      "parse_warnings": [],
+      "source_fixture_path": "/workspace/fixtures/sarasota/html/realtaxdeed_auction_list.html",
+      "tax_deed_record_url": null
+    },
+    {
+      "appraiser_assessment_cents": 0,
+      "auction_date": "2026-05-15",
+      "auction_status": "redeemed",
+      "case_number": "2026-TD-000457",
+      "county": "Sarasota",
+      "detail_url": "https://www.sarasota.realtaxdeed.com/index.cfm?zaction=AUCTION&zmethod=PREVIEW&AID=1002",
+      "missing_fields": [],
+      "notice_url": null,
+      "opening_bid_cents": 920000,
+      "parcel_id_normalized": "0145678902",
+      "parcel_id_raw": "0145-67-8902",
+      "parse_confidence": 1.0,
+      "parse_warnings": [],
+      "source_fixture_path": "/workspace/fixtures/sarasota/html/realtaxdeed_auction_list.html",
+      "tax_deed_record_url": null
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "quarantined_records": [
+    {
+      "extracted_record": {
+        "appraiser_assessment_cents": null,
+        "auction_date": null,
+        "auction_status": "unknown",
+        "case_number": null,
+        "county": "Sarasota",
+        "detail_url": "https://www.sarasota.realtaxdeed.com/",
+        "missing_fields": [
+          "case_number",
+          "parcel_id",
+          "auction_date",
+          "auction_status",
+          "opening_bid",
+          "appraiser_assessment"
+        ],
+        "notice_url": null,
+        "opening_bid_cents": null,
+        "parcel_id_normalized": null,
+        "parcel_id_raw": null,
+        "parse_confidence": 0.1,
+        "parse_warnings": [],
+        "source_fixture_path": "/workspace/fixtures/sarasota/html/clerk_tax_deed_auctions_landing.html",
+        "tax_deed_record_url": null
+      },
+      "missing_fields": [
+        "case_number",
+        "parcel_id",
+        "auction_date",
+        "auction_status",
+        "opening_bid",
+        "appraiser_assessment"
+      ],
+      "parse_confidence": 0.1,
+      "parse_warnings": [],
+      "quarantine_reason": "parse confidence 0.10 below 0.70; missing critical fields: case_number, opening_bid, parcel_id",
+      "source_fixture_path": "/workspace/fixtures/sarasota/html/clerk_tax_deed_auctions_landing.html"
+    }
+  ],
+  "records": []
+}

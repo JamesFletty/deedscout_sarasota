@@ -12,7 +12,7 @@ from app.parsing.parcel_parser import ParcelParseError, normalize_parcel_id
 from app.parsing.status_parser import normalize_auction_status
 from app.schemas.auction import NormalizedAuctionRecord
 
-PARSER_VERSION = "sarasota-fixture-parser-v1"
+PARSER_VERSION = "sarasota-auction-parser-v2"
 
 _BLOCK_TAGS = {
     "address",
@@ -50,6 +50,15 @@ _FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     "tax_deed_record_url": ("tax deed record url", "tax deed record"),
 }
 
+_PAGE_AUCTION_DATE_PATTERN = re.compile(
+    r"auction\s+date\s*:\s*(\d{1,2}/\d{1,2}/\d{4})",
+    re.IGNORECASE,
+)
+_LABEL_VALUE_TABLE_PATTERN = re.compile(
+    r"<th[^>]*>\s*(?P<label>.*?)\s*</th>\s*<td[^>]*>\s*(?P<value>.*?)\s*</td>",
+    re.IGNORECASE | re.DOTALL,
+)
+
 
 class _VisibleTextParser(HTMLParser):
     def __init__(self) -> None:
@@ -76,8 +85,39 @@ class _VisibleTextParser(HTMLParser):
         return unescape("".join(self.parts))
 
 
+def parse_auction_documents(
+    html: str,
+    *,
+    fixture_path: str | Path | None = None,
+) -> tuple[NormalizedAuctionRecord, ...]:
+    from app.parsing.auction_list_parser import parse_auction_list_html
+
+    list_records = parse_auction_list_html(html, fixture_path=fixture_path)
+    if list_records:
+        return list_records
+    return (parse_auction_detail_html(html, fixture_path=fixture_path),)
+
+
 def parse_auction_html(html: str, *, fixture_path: str | Path | None = None) -> NormalizedAuctionRecord:
+    """Parse a single detail-style auction page. Prefer parse_auction_documents for list pages."""
+    return parse_auction_detail_html(html, fixture_path=fixture_path)
+
+
+def parse_auction_detail_html(
+    html: str,
+    *,
+    fixture_path: str | Path | None = None,
+) -> NormalizedAuctionRecord:
     extracted = _extract_fields(html)
+    return normalize_auction_record(extracted, fixture_path=fixture_path, html=html)
+
+
+def normalize_auction_record(
+    extracted: dict[str, str],
+    *,
+    fixture_path: str | Path | None = None,
+    html: str | None = None,
+) -> NormalizedAuctionRecord:
     warnings: list[str] = []
     missing: list[str] = []
 
@@ -122,7 +162,9 @@ def parse_auction_html(html: str, *, fixture_path: str | Path | None = None) -> 
         extracted.get("appraiser_assessment"), "appraiser_assessment", missing, warnings
     )
 
-    detail_url = _clean_optional(extracted.get("detail_url")) or _first_link(html)
+    detail_url = _clean_optional(extracted.get("detail_url"))
+    if detail_url is None and html is not None:
+        detail_url = _first_detail_link(html)
     notice_url = _clean_optional(extracted.get("notice_url"))
     tax_deed_record_url = _clean_optional(extracted.get("tax_deed_record_url"))
 
@@ -167,11 +209,11 @@ def _parse_optional_money(value: str | None, field_name: str, missing: list[str]
 
 
 def _extract_fields(html: str) -> dict[str, str]:
+    fields = _extract_label_value_table_fields(html)
     parser = _VisibleTextParser()
     parser.feed(html)
     lines = [_normalize_line(line) for line in parser.text().splitlines()]
     lines = [line for line in lines if line]
-    fields: dict[str, str] = {}
 
     for line in lines:
         label, value = _split_inline_label(line)
@@ -182,7 +224,27 @@ def _extract_fields(html: str) -> dict[str, str]:
         if _canonical_field(line) is not None:
             _store_field(fields, line, lines[index + 1])
 
+    page_date = _extract_page_auction_date(html)
+    if page_date is not None:
+        _store_field(fields, "auction date", page_date)
+
     return fields
+
+
+def _extract_label_value_table_fields(html: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for match in _LABEL_VALUE_TABLE_PATTERN.finditer(html):
+        label = _strip_tags(match.group("label"))
+        value = _strip_tags(match.group("value"))
+        _store_field(fields, label, value)
+    return fields
+
+
+def _extract_page_auction_date(html: str) -> str | None:
+    match = _PAGE_AUCTION_DATE_PATTERN.search(html)
+    if match is None:
+        return None
+    return match.group(1)
 
 
 def _split_inline_label(line: str) -> tuple[str | None, str | None]:
@@ -222,7 +284,16 @@ def _normalize_line(value: str) -> str:
     return " ".join(value.strip().split())
 
 
-def _first_link(html: str) -> str | None:
+def _strip_tags(fragment: str) -> str:
+    without_tags = re.sub(r"<[^>]+>", " ", fragment)
+    return " ".join(unescape(without_tags).split())
+
+
+def _first_detail_link(html: str) -> str | None:
     parser = _VisibleTextParser()
     parser.feed(html)
+    for link in parser.links:
+        lowered = link.lower()
+        if "realtaxdeed.com" in lowered and "preview" in lowered:
+            return link
     return next((link for link in parser.links if link), None)

@@ -48,6 +48,21 @@ npm run dev
 
 Open `http://localhost:3000` to view the minimal dashboard shell.
 
+## Cursor Cloud Agent setup
+
+For a fresh Cursor Cloud Agent environment, run the bootstrap script from the
+repository root:
+
+```bash
+bash scripts/setup_cloud_agent.sh
+```
+
+The script installs Python 3.12 venv support when needed, creates
+`apps/api/.venv`, installs the backend in editable dev mode, installs
+Playwright Chromium support for screenshot capture, installs frontend
+dependencies with `npm ci`, and verifies that a headless screenshot can be
+captured.
+
 ## Docker Compose
 
 ```bash

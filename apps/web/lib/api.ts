@@ -190,7 +190,7 @@ export function getRecordEvidence(recordId: string): Promise<RecordEvidence> {
 export function importSarasotaBatch(sourceUrl?: string): Promise<ImportBatchResponse> {
   return request<ImportBatchResponse>("/api/batches/sarasota/import", {
     method: "POST",
-    body: JSON.stringify({ source_url: sourceUrl || undefined, snapshot_only: true }),
+    body: JSON.stringify({ source_url: sourceUrl || undefined, snapshot_only: false }),
   });
 }
 

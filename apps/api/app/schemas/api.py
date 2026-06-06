@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class SarasotaImportRequest(BaseModel):
     source_url: str | None = None
-    snapshot_only: bool = True
+    snapshot_only: bool = False
     headless: bool | None = None
     max_pages: int | None = Field(default=None, ge=1)
     max_retries: int | None = Field(default=None, ge=0)

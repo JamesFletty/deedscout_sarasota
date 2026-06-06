@@ -14,6 +14,7 @@ from app.db.session import get_db
 from app.main import app
 from app.models import core  # noqa: F401
 from app.models.core import AgentRun, AuctionBatch, AuctionRecord, CostEvent, SourceSnapshot, TriageResult
+from app.schemas.api import SarasotaImportRequest
 
 
 @pytest.fixture
@@ -128,6 +129,12 @@ def test_import_batch_and_job_status(api_client: tuple[TestClient, sessionmaker[
     job_response = client.get(f"/api/jobs/{payload['job_id']}")
     assert job_response.status_code == 200
     assert job_response.json()["status"] == "completed"
+
+
+def test_import_request_parses_supplied_sources_by_default() -> None:
+    request = SarasotaImportRequest(source_url="file:///workspace/fixtures/sarasota/html/sample_auction_detail.html")
+
+    assert request.snapshot_only is False
 
 
 def test_batches_can_be_listed_and_inspected(api_client: tuple[TestClient, sessionmaker[Session]]) -> None:

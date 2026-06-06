@@ -4,6 +4,7 @@ from app.parsing.fixture_replay import replay_fixture
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SAMPLE_FIXTURE = REPO_ROOT / "fixtures/sarasota/html/sample_auction_detail.html"
+CLERK_SOURCE_FIXTURE = REPO_ROOT / "fixtures/sarasota/html/sarasota_clerk_tax_deed_auctions_source.html"
 
 
 def test_fixture_replay_parses_sample_fixture() -> None:
@@ -44,3 +45,14 @@ def test_low_confidence_record_routes_to_quarantine_style_output(tmp_path) -> No
     assert "parcel_id" in quarantined.missing_fields
     assert "opening_bid" in quarantined.missing_fields
     assert "missing critical fields" in quarantined.quarantine_reason
+
+
+def test_clerk_landing_page_fixture_does_not_create_record() -> None:
+    result = replay_fixture(CLERK_SOURCE_FIXTURE)
+
+    assert result.records == ()
+    assert len(result.quarantined_records) == 1
+    quarantined = result.quarantined_records[0]
+    assert quarantined.source_fixture_path == str(CLERK_SOURCE_FIXTURE)
+    assert quarantined.parse_confidence < 0.70
+    assert {"case_number", "parcel_id", "opening_bid"}.issubset(quarantined.missing_fields)

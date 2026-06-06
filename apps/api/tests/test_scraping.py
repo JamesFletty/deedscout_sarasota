@@ -18,9 +18,12 @@ from app.scraping.playwright_client import (
     detect_blocked_reason,
 )
 from app.scraping.sarasota_auction_scraper import SarasotaAuctionScraper
+from app.scraping.sarasota_source_discovery import analyze_sarasota_clerk_source
 from app.scraping.snapshotter import snapshot_page
 from app.storage.local_storage import LocalStorage
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CLERK_SOURCE_FIXTURE = REPO_ROOT / "fixtures/sarasota/html/sarasota_clerk_tax_deed_auctions_source.html"
 SAMPLE_HTML = """
 <html><head><title>Fixture</title></head><body>
 <p>Case Number: 2026-TD-000123</p>
@@ -199,3 +202,26 @@ def test_blocked_markers_are_detected_without_bypass_attempts() -> None:
 
     assert reason is not None
     assert "blocked" in reason or "access" in reason.lower()
+
+
+def test_clerk_source_fixture_documents_landing_page_structure() -> None:
+    structure = analyze_sarasota_clerk_source(
+        CLERK_SOURCE_FIXTURE.read_text(encoding="utf-8"),
+        source_url="https://www.sarasotaclerk.com/Home-and-Property/Tax-Deeds/Tax-Deed-Auctions",
+    )
+
+    assert structure.page_title == "Tax Deed Auctions | Sarasota Clerk of the Circuit Court and County Comptroller"
+    assert structure.auction_calendar_url == (
+        "https://sarasota.realtaxdeed.com/index.cfm?zaction=USER&zmethod=CALENDAR"
+    )
+    assert structure.property_appraiser_url == "https://www.sc-pa.com/"
+    assert structure.assessment_values_present is False
+    assert structure.record_field_presence == {
+        "case_number": False,
+        "parcel_id": False,
+        "opening_bid": False,
+        "auction_date": False,
+        "auction_status": False,
+        "appraiser_assessment": False,
+    }
+    assert "informational landing page" in " ".join(structure.notes)

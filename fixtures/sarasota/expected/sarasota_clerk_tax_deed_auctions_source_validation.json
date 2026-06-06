@@ -1,0 +1,28 @@
+{
+  "assessment_values_present": false,
+  "auction_calendar_url": "https://sarasota.realtaxdeed.com/index.cfm?zaction=USER&zmethod=CALENDAR",
+  "content_hash": "9fd4e6f871df68b2e062b714196740ec5e5ac8c2a83f27a5627e69141df455ca",
+  "external_calendar_robots_status": "robots.txt returned HTTP 403 during validation; automated capture was not attempted",
+  "html_fixture": "fixtures/sarasota/html/sarasota_clerk_tax_deed_auctions_source.html",
+  "notes": [
+    "Clerk page links to an external RealTaxDeed auction calendar for current sale records.",
+    "Captured Clerk page is an informational landing page, not a parcel-level auction list.",
+    "Property Appraiser assessment values are not present as parcel-level fields on the Clerk page.",
+    "Clerk page provides a Property Appraiser resource link for manual cross-reference.",
+    "Committed HTML fixture sanitizes a public third-party telemetry key string; runtime snapshot storage preserves fetched evidence outside the repo."
+  ],
+  "page_structure_hash": "8b4981cee95c255f6d745d04f270ba77bbeacf538bcb7b3eea45ca1133c9730c",
+  "page_title": "Tax Deed Auctions | Sarasota Clerk of the Circuit Court and County Comptroller",
+  "property_appraiser_url": "https://www.sc-pa.com/",
+  "record_field_presence": {
+    "appraiser_assessment": false,
+    "auction_date": false,
+    "auction_status": false,
+    "case_number": false,
+    "opening_bid": false,
+    "parcel_id": false
+  },
+  "screenshot_fixture": "fixtures/sarasota/screenshots/sarasota_clerk_tax_deed_auctions_source.png",
+  "screenshot_hash": "8bc39e592ce38ec05965283f28be8aae826e0ddb34fba52336c04f25d950ada0",
+  "source_url": "https://www.sarasotaclerk.com/Home-and-Property/Tax-Deeds/Tax-Deed-Auctions"
+}

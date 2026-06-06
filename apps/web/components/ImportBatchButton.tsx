@@ -6,11 +6,11 @@ export function ImportBatchButton() {
       <input
         name="sourceUrl"
         type="url"
-        placeholder="Optional Sarasota source URL"
+        placeholder="Optional Sarasota source or fixture URL"
         className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
       />
       <button className="rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800" type="submit">
-        Create import batch
+        Import batch
       </button>
     </form>
   );

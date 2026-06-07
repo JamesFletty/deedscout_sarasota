@@ -48,6 +48,19 @@ npm run dev
 
 Open `http://localhost:3000` to view the minimal dashboard shell.
 
+## Fixture-first import (vertical slice)
+
+Load committed Sarasota HTML fixtures, store evidence snapshots, parse records, and run Tier 1 triage:
+
+```bash
+cd apps/api
+python -m app.cli import-fixtures
+```
+
+API equivalent: `POST /api/batches/sarasota/import-fixtures` with `{"run_triage": true}`.
+
+The dashboard **Import Sarasota fixture batch** button triggers the same path.
+
 ## Optional: Firecrawl source validation
 
 For live Sarasota page structure checks without committing raw evidence, install the [Firecrawl CLI](https://firecrawl.dev) and set `FIRECRAWL_API_KEY` in `.env`, then run:

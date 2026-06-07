@@ -31,6 +31,17 @@ export type ImportBatchResponse = {
   job_status: string;
 };
 
+export type FixtureImportResponse = {
+  batch_id: string;
+  job_id: string;
+  job_status: string;
+  fixtures_processed: number;
+  snapshots_stored: number;
+  records_created: number;
+  records_quarantined: number;
+  triage_results_created: number;
+};
+
 export type TriageSummary = {
   tier_1_status: string;
   grade: string;
@@ -191,6 +202,13 @@ export function importSarasotaBatch(sourceUrl?: string): Promise<ImportBatchResp
   return request<ImportBatchResponse>("/api/batches/sarasota/import", {
     method: "POST",
     body: JSON.stringify({ source_url: sourceUrl || undefined, snapshot_only: true }),
+  });
+}
+
+export function importSarasotaFixtures(runTriage = true): Promise<FixtureImportResponse> {
+  return request<FixtureImportResponse>("/api/batches/sarasota/import-fixtures", {
+    method: "POST",
+    body: JSON.stringify({ run_triage: runTriage }),
   });
 }
 

@@ -2,11 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { classifyAmbiguous, importSarasotaBatch, runTier1Triage } from "@/lib/api";
+import { classifyAmbiguous, importSarasotaBatch, importSarasotaFixtures, runTier1Triage } from "@/lib/api";
 
 export async function importBatchAction(formData: FormData) {
   const sourceUrl = String(formData.get("sourceUrl") ?? "").trim();
   const result = await importSarasotaBatch(sourceUrl || undefined);
+  revalidatePath("/dashboard");
+  redirect(`/batches/${result.batch_id}`);
+}
+
+export async function importFixtureBatchAction() {
+  const result = await importSarasotaFixtures(true);
   revalidatePath("/dashboard");
   redirect(`/batches/${result.batch_id}`);
 }

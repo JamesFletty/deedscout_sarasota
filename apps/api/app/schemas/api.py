@@ -37,6 +37,22 @@ class ImportBatchResponse(BaseModel):
     job_status: str
 
 
+class SarasotaFixtureImportRequest(BaseModel):
+    fixtures_dir: str | None = None
+    run_triage: bool = True
+
+
+class FixtureImportResponse(BaseModel):
+    batch_id: UUID
+    job_id: UUID
+    job_status: str
+    fixtures_processed: int
+    snapshots_stored: int
+    records_created: int
+    records_quarantined: int
+    triage_results_created: int
+
+
 class BatchSummary(BaseModel):
     id: UUID
     county: str

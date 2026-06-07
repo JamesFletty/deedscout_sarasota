@@ -15,6 +15,7 @@ from app.parsing.fixture_replay import replay_fixture, replay_fixtures, write_ex
 from app.scraping.playwright_client import ScraperConfig
 from app.scraping.sarasota_auction_scraper import SarasotaAuctionScraper, SarasotaScrapeResult
 from app.services.ambiguity_classifier_service import AmbiguityClassificationSummary, classify_ambiguous_records
+from app.services.fixture_import_service import FixtureImportResult, import_sarasota_fixtures
 from app.services.triage_service import run_tier1_triage
 from app.storage.factory import build_storage
 
@@ -47,11 +48,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     classify = subparsers.add_parser("classify-ambiguous", help="Run cost-gated LLM ambiguity classification")
     classify.add_argument("batch_id")
 
+    import_fixtures = subparsers.add_parser(
+        "import-fixtures",
+        help="Import committed Sarasota HTML fixtures into a batch and optionally run triage",
+    )
+    import_fixtures.add_argument("--fixtures-dir", type=Path)
+    import_fixtures.add_argument("--no-triage", action="store_true")
+
     args = parser.parse_args(argv)
     if args.command == "replay-fixture":
-        result = replay_fixture(args.path)
+        replay_result = replay_fixture(args.path)
         if args.write_expected:
-            write_expected_snapshot(result, args.path, expected_dir=args.expected_dir)
+            write_expected_snapshot(replay_result, args.path, expected_dir=args.expected_dir)
+        print(json.dumps(replay_result.model_dump(mode="json"), indent=2, sort_keys=True))
+        return 0
     elif args.command == "replay-fixtures":
         result = replay_fixtures(args.path)
         if args.write_expected:
@@ -77,6 +87,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             triage_results = run_tier1_triage(session, UUID(args.batch_id))
         print(json.dumps(_triage_result_payload(triage_results), indent=2, sort_keys=True))
         return 0
+    elif args.command == "import-fixtures":
+        settings = get_settings()
+        Base.metadata.create_all(bind=engine)
+        with SessionLocal() as session:
+            import_result = import_sarasota_fixtures(
+                session=session,
+                fixtures_dir=args.fixtures_dir or settings.sarasota_fixtures_dir,
+                run_triage=not args.no_triage,
+                settings=settings,
+            )
+        print(json.dumps(_fixture_import_payload(import_result), indent=2, sort_keys=True))
+        return 0
     else:
         Base.metadata.create_all(bind=engine)
         with SessionLocal() as session:
@@ -84,8 +106,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(_classification_summary_payload(summary), indent=2, sort_keys=True))
         return 0
 
-    print(json.dumps(result.model_dump(mode="json"), indent=2, sort_keys=True))
-    return 0
+    raise RuntimeError(f"Unhandled CLI command: {args.command}")
 
 
 def _scraper_config_from_args(settings: Settings, *, headful: bool, max_pages: int | None) -> ScraperConfig:
@@ -138,6 +159,17 @@ def _triage_result_payload(triage_results: list[TriageResult]) -> dict[str, obje
             }
             for result in triage_results
         ]
+    }
+
+
+def _fixture_import_payload(result: FixtureImportResult) -> dict[str, object]:
+    return {
+        "batch_id": str(result.batch_id),
+        "fixtures_processed": result.fixtures_processed,
+        "snapshots_stored": result.snapshots_stored,
+        "records_created": result.records_created,
+        "records_quarantined": result.records_quarantined,
+        "triage_results_created": result.triage_results_created,
     }
 
 

@@ -32,6 +32,7 @@ class Settings(BaseSettings):
         default=Path("./.storage"),
         validation_alias=AliasChoices("LOCAL_STORAGE_ROOT", "LOCAL_ARTIFACT_ROOT"),
     )
+    sarasota_fixtures_dir: Path | None = Field(default=None, alias="SARASOTA_FIXTURES_DIR")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", populate_by_name=True, extra="ignore")
 

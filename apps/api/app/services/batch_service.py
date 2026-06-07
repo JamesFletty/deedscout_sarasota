@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -11,6 +12,7 @@ from app.models.core import AuctionBatch
 from app.scraping.playwright_client import ScraperConfig
 from app.scraping.sarasota_auction_scraper import SarasotaAuctionScraper
 from app.services.ambiguity_classifier_service import classify_ambiguous_records
+from app.services.fixture_import_service import FixtureImportResult, import_sarasota_fixtures
 from app.services.job_service import JobState, job_service
 from app.services.triage_service import run_tier1_triage
 from app.storage.factory import build_storage
@@ -18,6 +20,42 @@ from app.storage.factory import build_storage
 
 class BatchNotFoundError(ValueError):
     """Raised when a requested auction batch does not exist."""
+
+
+def create_sarasota_fixture_import_batch(
+    *,
+    session: Session,
+    fixtures_dir: str | None,
+    run_triage: bool,
+    settings: Settings | None = None,
+) -> tuple[AuctionBatch, JobState, FixtureImportResult]:
+    active_settings = settings or get_settings()
+    configured_dir = Path(fixtures_dir) if fixtures_dir else active_settings.sarasota_fixtures_dir
+    job = job_service.create_started(
+        job_type="sarasota_fixture_import",
+        message="Synchronous Sarasota fixture import started",
+    )
+    try:
+        result = import_sarasota_fixtures(
+            session=session,
+            fixtures_dir=configured_dir,
+            run_triage=run_triage,
+            settings=active_settings,
+        )
+    except FileNotFoundError as exc:
+        job_service.fail(job.job_id, error_message=str(exc))
+        raise ValueError(str(exc)) from exc
+
+    batch = get_batch(session, result.batch_id)
+    job_service.complete(
+        job.job_id,
+        batch_id=batch.id,
+        message=(
+            f"Fixture import completed: {result.records_created} records, "
+            f"{result.triage_results_created} triage results"
+        ),
+    )
+    return batch, job_service.get(job.job_id), result
 
 
 def create_sarasota_import_batch(

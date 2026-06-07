@@ -4,6 +4,7 @@ import { BatchSummaryCard } from "@/components/BatchSummaryCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { ImportBatchButton } from "@/components/ImportBatchButton";
+import { ImportFixtureBatchButton } from "@/components/ImportFixtureBatchButton";
 import { listBatches } from "@/lib/api";
 
 export default async function DashboardPage() {
@@ -21,7 +22,8 @@ export default async function DashboardPage() {
                 Scraper-first due-diligence triage for Sarasota tax deed research. Outputs organize public-record research and require qualified human review.
               </p>
             </div>
-            <div className="w-full max-w-xl">
+            <div className="grid w-full max-w-xl gap-3">
+              <ImportFixtureBatchButton />
               <ImportBatchButton />
             </div>
           </div>

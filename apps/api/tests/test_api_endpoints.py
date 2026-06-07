@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -113,6 +114,36 @@ def seed_batch(factory: sessionmaker[Session]) -> tuple[str, str]:
         session.add_all([snapshot, triage, run, cost])
         session.commit()
         return str(batch.id), str(record.id)
+
+
+def test_import_fixture_batch_runs_triage(
+    api_client: tuple[TestClient, sessionmaker[Session]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, _ = api_client
+    fixtures_dir = Path(__file__).resolve().parents[3] / "fixtures/sarasota/html"
+    monkeypatch.setenv("LOCAL_STORAGE_ROOT", str(tmp_path / ".storage"))
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+    response = client.post(
+        "/api/batches/sarasota/import-fixtures",
+        json={"run_triage": True, "fixtures_dir": str(fixtures_dir)},
+    )
+    get_settings.cache_clear()
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["records_created"] == 4
+    assert payload["triage_results_created"] == 4
+    assert payload["job_status"] == "completed"
+
+    records_response = client.get(f"/api/batches/{payload['batch_id']}/records", params={"limit": 100})
+    assert records_response.status_code == 200
+    items = records_response.json()["items"]
+    assert len(items) == 4
+    assert all(item["latest_triage"] is not None for item in items)
 
 
 def test_import_batch_and_job_status(api_client: tuple[TestClient, sessionmaker[Session]]) -> None:

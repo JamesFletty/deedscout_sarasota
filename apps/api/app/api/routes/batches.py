@@ -11,7 +11,9 @@ from app.schemas.api import (
     BatchListResponse,
     BatchSummary,
     ClassificationRunResponse,
+    FixtureImportResponse,
     ImportBatchResponse,
+    SarasotaFixtureImportRequest,
     SarasotaImportRequest,
     TriageRunRequest,
     TriageRunResponse,
@@ -19,6 +21,7 @@ from app.schemas.api import (
 from app.services.ambiguity_classifier_service import classify_ambiguous_records
 from app.services.batch_service import (
     BatchNotFoundError,
+    create_sarasota_fixture_import_batch,
     create_sarasota_import_batch,
     get_batch,
     list_batches,
@@ -51,6 +54,37 @@ def create_sarasota_import(request: SarasotaImportRequest, db: DbSession) -> Imp
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     return ImportBatchResponse(batch_id=batch.id, job_id=job.job_id, job_status=job.status)
+
+
+@router.post(
+    "/sarasota/import-fixtures",
+    response_model=FixtureImportResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Import Sarasota auction records from committed HTML fixtures",
+    description=(
+        "Loads fixtures/sarasota/html, stores HTML snapshots with hashes, "
+        "parses normalized records, and optionally runs Tier 1 triage."
+    ),
+)
+def create_sarasota_fixture_import(request: SarasotaFixtureImportRequest, db: DbSession) -> FixtureImportResponse:
+    try:
+        batch, job, result = create_sarasota_fixture_import_batch(
+            session=db,
+            fixtures_dir=request.fixtures_dir,
+            run_triage=request.run_triage,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    return FixtureImportResponse(
+        batch_id=batch.id,
+        job_id=job.job_id,
+        job_status=job.status,
+        fixtures_processed=result.fixtures_processed,
+        snapshots_stored=result.snapshots_stored,
+        records_created=result.records_created,
+        records_quarantined=result.records_quarantined,
+        triage_results_created=result.triage_results_created,
+    )
 
 
 @router.get(
